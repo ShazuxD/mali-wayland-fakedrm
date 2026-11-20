@@ -1,0 +1,12 @@
+#!/bin/sh
+# Run any program with the Mali GPU (EGL on Wayland via wlegl).  Usage: gpu-run firefox-esr ...
+M=${MALI_WL_DIR:-/opt/mali-wl}
+export LD_LIBRARY_PATH="$M${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+export LD_PRELOAD="$M/gbm_compat.so:$M/mali_shim.so:$M/fakedrm.so${LD_PRELOAD:+:$LD_PRELOAD}"
+export KBASE_SPOOF=1 FAKE_DRM_OK=1 FAKE_ION_FLAGS=${FAKE_ION_FLAGS:-1} WLEGL_REAL="$M/blob.so"
+export XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-/run/user/0}
+if [ -z "$WAYLAND_DISPLAY" ]; then
+  for s in "$XDG_RUNTIME_DIR"/wayland-*; do case "$s" in *.lock) ;; *) [ -S "$s" ] && WAYLAND_DISPLAY=${s##*/} && break;; esac; done
+  export WAYLAND_DISPLAY
+fi
+exec "$@"

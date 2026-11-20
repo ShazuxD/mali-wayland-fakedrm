@@ -1,0 +1,10 @@
+[Unit]
+Description=Weston on Mali GPU (fake DRM/KMS)
+After=local-fs.target
+
+[Service]
+ExecStart=/usr/local/bin/weston-gpu
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

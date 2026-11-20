@@ -1,0 +1,12 @@
+#!/bin/sh
+# Create the device nodes/dirs the stack needs.  Safe to run repeatedly (call at every boot).
+mkdir -p /dev/dri
+[ -e /dev/dri/card0 ] || mknod /dev/dri/card0 c 226 0      # placeholder; fakedrm.so intercepts opens of it
+chmod 660 /dev/dri/card0
+if [ ! -e /dev/mali0 ]; then
+  d=$(cat /sys/class/misc/mali0/dev 2>/dev/null) && mknod /dev/mali0 c "${d%:*}" "${d#*:}"
+fi
+chmod 666 /dev/mali0 2>/dev/null
+mkdir -p /run/user/0 && chmod 700 /run/user/0
+for n in /dev/mali0 /dev/ion /dev/fb0; do [ -e "$n" ] || echo "mali-dev-init: WARNING $n missing (kernel/driver not loaded?)" >&2; done
+exit 0

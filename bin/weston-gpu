@@ -1,0 +1,9 @@
+#!/bin/sh
+# Start Weston (DRM backend on the fake DRM/KMS layer, Mali GPU composition).
+M=${MALI_WL_DIR:-/opt/mali-wl}
+/usr/local/bin/mali-dev-init
+export XDG_RUNTIME_DIR=/run/user/0
+exec env LD_LIBRARY_PATH="$M/native" \
+  LD_PRELOAD="$M/gbm_compat.so:$M/mali_shim.so:$M/fakedrm.so:$M/fakeudev.so" \
+  KBASE_SPOOF=1 FAKE_DRM_OK=1 FAKE_ION_FLAGS=1 \
+  weston --backend=drm-backend.so --idle-time=0 --config=/etc/mali-wl/weston.ini "$@"

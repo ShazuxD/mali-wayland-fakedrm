@@ -1,0 +1,8 @@
+blob/
+blob.so
+*.so
+*.o
+*.log
+*.ppm
+*.mp4
+*.mkv
