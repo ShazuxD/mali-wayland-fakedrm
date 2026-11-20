@@ -37,7 +37,7 @@ for s in mali_shim gbm_compat fakedrm fakeudev; do gcc $CF -o $M/$s.so "$HERE/sr
 rm -f $M/use_gbm_compat
 nm -D --defined-only $M/blob.so | grep -q ' gbm_bo_get_fd_for_plane$' || touch $M/use_gbm_compat
 install -m755 "$HERE"/bin/* /usr/local/bin/
-[ -e /etc/mali-wl/weston.ini ] || cp "$HERE/config/weston.ini" /etc/mali-wl/weston.ini
+rm /etc/mali-wl/weston.ini; [ -e /etc/mali-wl/weston.ini ] || cp "$HERE/config/weston.ini" /etc/mali-wl/weston.ini
 [ -d /etc/systemd/system ] && install -m644 "$HERE/systemd/weston-gpu.service" /etc/systemd/system/
 cat <<MSG
 
