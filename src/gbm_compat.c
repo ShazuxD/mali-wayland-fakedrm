@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 #include <stdint.h>
+#include <stdlib.h>
 #include <dlfcn.h>
 #include <stdio.h>
 #include <string.h>
@@ -16,7 +17,7 @@ static void *blob_handle;
 static void *blob_sym(const char *name)
 {
     if (!blob_handle) {
-        blob_handle = dlopen("/root/drmprobe/lib/blob.so",
+        blob_handle = dlopen(getenv("MALI_BLOB") ? getenv("MALI_BLOB") : "/opt/mali-wl/blob.so",
                              RTLD_NOW | RTLD_LOCAL);
         if (!blob_handle)
             fprintf(stderr, "[gbm_compat] dlopen failed: %s\n", dlerror());
@@ -54,6 +55,8 @@ struct gbm_bo *gbm_surface_lock_front_buffer(struct gbm_surface *surface)
     if (!map_fn) map_fn = blob_sym("gbm_bo_map");
     if (!unmap_fn) unmap_fn = blob_sym("gbm_bo_unmap");
 
+    if (!getenv("GBM_DIAG"))   /* the diagnostics below map 1920x1080; only on request */
+        return lock_fn ? lock_fn(surface) : NULL;
     struct gbm_bo *bo = lock_fn ? lock_fn(surface) : NULL;
     if (!bo) {
         fprintf(stderr, "[gbm-debug] lock_front_buffer -> NULL\n");
@@ -165,7 +168,12 @@ int gbm_bo_get_fd_for_plane(struct gbm_bo *bo, int plane)
     static int (*real_fn)(struct gbm_bo *, int);
     if (!real_fn)
         real_fn = blob_sym("gbm_bo_get_fd_per_plane");
-    return real_fn ? real_fn(bo, plane) : -1;
+    if (real_fn)
+        return real_fn(bo, plane);
+    {   /* blob has no per-plane export: plane 0 is the single fd */
+        int (*g)(struct gbm_bo *) = blob_sym("gbm_bo_get_fd");
+        return (plane == 0 && g) ? g(bo) : -1;
+    }
 }
 
 struct gbm_bo *gbm_bo_create_with_modifiers2(

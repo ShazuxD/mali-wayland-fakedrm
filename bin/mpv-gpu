@@ -5,6 +5,6 @@ M=${MALI_WL_DIR:-/opt/mali-wl}
 export XDG_RUNTIME_DIR=/run/user/0
 [ -s "$M/fakedrm_atomic.so" ] || { echo "fakedrm_atomic.so not built (src/fakedrm_atomic.c missing)"; exit 1; }
 exec env LD_LIBRARY_PATH="$M/native" \
-  LD_PRELOAD="$M/gbm_compat.so:$M/mali_shim.so:$M/fakedrm_atomic.so:$M/fakeudev.so" \
+  LD_PRELOAD="$(for f in gbm_compat; do [ -e $M/use_gbm_compat ] && echo $M/$f.so:; done)$M/mali_shim.so:$M/fakedrm_atomic.so:$M/fakeudev.so" \
   KBASE_SPOOF=1 FAKE_DRM_OK=1 FAKE_ION_FLAGS=1 \
   mpv --no-config --drm-device=/dev/dri/card0 --hwdec=no --vo=gpu --gpu-context=drm --gpu-api=opengl "$@"

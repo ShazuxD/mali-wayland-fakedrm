@@ -1,6 +1,5 @@
 blob/
 blob.so
-*.so
 *.o
 *.log
 *.ppm
